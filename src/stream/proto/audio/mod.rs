@@ -86,7 +86,16 @@ impl AudioStream {
             // maximum wait for a audio packet to be lost
             //
             // References: https://github.com/moonlight-stream/moonlight-common-c/blob/f900dd4767759c7b9d0e93bcea666b55c69ea62f/src/RtpAudioQueue.c#L544-L548
-            max_sample_wait: (config.audio_packet_duration * 4) + Duration::from_millis(10),
+            //
+            // Ableton Together fork: upstream's 4x+10ms budget (~30ms at the usual 5ms audio
+            // packet duration) assumes a dedicated game-streaming pipeline with essentially no
+            // scheduling jitter. Here this same async runtime also drives video encoding and
+            // WebRTC, so a single late tokio poll is enough to blow that budget and trigger
+            // try_skip_samples() even though the packet wasn't actually lost — just delayed.
+            // Collaborative music production cares about *continuous* audio far more than
+            // shaving off ~150ms of extra latency, so we trade that latency for a much larger
+            // margin before we give up and skip ahead.
+            max_sample_wait: (config.audio_packet_duration * 4) + Duration::from_millis(150),
             first_packet: None,
             last_frame: now,
             dropped_frames: true,
