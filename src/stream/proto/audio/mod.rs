@@ -93,9 +93,11 @@ impl AudioStream {
             // WebRTC, so a single late tokio poll is enough to blow that budget and trigger
             // try_skip_samples() even though the packet wasn't actually lost — just delayed.
             // Collaborative music production cares about *continuous* audio far more than
-            // shaving off ~150ms of extra latency, so we trade that latency for a much larger
-            // margin before we give up and skip ahead.
-            max_sample_wait: (config.audio_packet_duration * 4) + Duration::from_millis(150),
+            // shaving off some extra latency, so we trade that latency for a much larger
+            // margin before we give up and skip ahead. 150ms wasn't enough in practice —
+            // observed stalls on the shared runtime reach 250-350ms under load — so this
+            // goes further than the first attempt.
+            max_sample_wait: (config.audio_packet_duration * 4) + Duration::from_millis(400),
             first_packet: None,
             last_frame: now,
             dropped_frames: true,
