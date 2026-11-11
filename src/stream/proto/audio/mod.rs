@@ -87,7 +87,7 @@ impl AudioStream {
             //
             // References: https://github.com/moonlight-stream/moonlight-common-c/blob/f900dd4767759c7b9d0e93bcea666b55c69ea62f/src/RtpAudioQueue.c#L544-L548
             //
-            // Ableton Together fork: upstream's 4x+10ms budget (~30ms at the usual 5ms audio
+            // dawswithfriends fork: upstream's 4x+10ms budget (~30ms at the usual 5ms audio
             // packet duration) assumes a dedicated game-streaming pipeline with essentially no
             // scheduling jitter. Here this same async runtime also drives video encoding and
             // WebRTC, so a single late tokio poll is enough to blow that budget and trigger
